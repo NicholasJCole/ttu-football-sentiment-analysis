@@ -1,7 +1,8 @@
 import nltk
 import matplotlib.pyplot as plt
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from datetime import datetime
+from datetime import datetime, timedelta
+import matplotlib.dates as mdates
 
 # Set the backend to 'tkagg'
 plt.switch_backend('tkagg')
@@ -10,6 +11,7 @@ plt.switch_backend('tkagg')
 nltk.download('vader_lexicon')
 sia = SentimentIntensityAnalyzer()
 
+# Sample data: List of paragraphs with corresponding timestamps
 # Sample data: List of paragraphs with corresponding timestamps
 # Sample data: List of paragraphs with corresponding timestamps
 data = [
@@ -72,14 +74,31 @@ for entry in data:
     trailing_average = calculate_trailing_average(sentiment_scores, 5)
     trailing_averages.append(trailing_average)
 
+# Get user input for the desired tick interval in minutes
+interval_minutes = int(30)
+
 # Create the plot
 plt.figure(figsize=(12, 6))
 plt.plot(timestamps, trailing_averages, marker='o', linestyle='-', label='Trailing Avg (5)', color='b')
 plt.fill_between(timestamps, trailing_averages, color='b', alpha=0.2)
-plt.xlabel('Time', fontsize=14)
-plt.ylabel('Sentiment Score', fontsize=14)
+plt.xlabel('Time', fontsize=14)  # Change X-axis label font size
+plt.ylabel('Sentiment Score', fontsize=14)  # Change Y-axis label font size
 plt.title('Sentiment Analysis Over Time with Trailing Average', fontsize=16)
-plt.xticks(rotation=45)
+
+# Create a list of datetime objects with the specified interval for X-axis ticks
+start_time = min(timestamps)
+end_time = max(timestamps)
+x_ticks = []
+current_time = start_time
+
+while current_time <= end_time:
+    x_ticks.append(current_time)
+    current_time += timedelta(minutes=interval_minutes)
+
+# Set X-axis ticks and format labels as HH:mm
+plt.xticks(x_ticks, [timestamp.strftime('%H:%M') for timestamp in x_ticks], rotation=45, fontsize=12)
+
+plt.yticks(fontsize=12)  # Change Y-axis tick label font size
 plt.ylim(-1, 1)  # Set the Y-axis range to [-1, 1]
 plt.grid(False)  # Remove grid lines
 plt.legend(fontsize=12)
@@ -88,6 +107,14 @@ plt.tight_layout()
 # Add a background color for better contrast
 ax = plt.gca()
 ax.set_facecolor('#f7f7f7')
+
+# Add custom markers or callout boxes
+# Example: Add a callout box at a specific point
+# You can customize the text and position as needed.
+plt.annotate('Custom Marker 1', xy=(timestamps[10], trailing_averages[10]), xytext=(timestamps[10], 0.5),
+             arrowprops=dict(facecolor='red', shrink=0.05, width=2, headwidth=10),
+             bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor="white"),
+             fontsize=12, color='blue', weight='bold')
 
 # Show the plot
 plt.show()
